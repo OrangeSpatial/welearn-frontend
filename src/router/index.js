@@ -21,6 +21,7 @@ import Task from '../components/Task.vue'
 import History from '../components/History.vue'
 import Setting from '../components/Setting.vue'
 import Test from '../components/Test.vue'
+import RSImage from "../components/RSImage.vue";
 
 Vue.use(VueRouter)
 
@@ -92,6 +93,10 @@ Vue.use(VueRouter)
       {
         path: '/controller/imageSet',
         component: ImageSet
+      },
+      {
+        path: '/controller/rsImage',
+        component: RSImage
       },
       {
         path: '/controller/auditImageSet',

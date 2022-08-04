@@ -81,3 +81,18 @@ export function getImage() {
       data: form
     })
   }
+// ==========================================================================================
+export function categoryTree () {
+  return service({
+    url: '/category/findTree',
+    method: 'get'
+  })
+}
+
+export function saveCategory (form) {
+  return service({
+    url: '/category/insert',
+    method: 'post',
+    data: form
+  })
+}

@@ -1,6 +1,5 @@
 import { service } from "./url.js"
 
-
 export function findAll() {
     return service({
       url: "/model/findAll",
