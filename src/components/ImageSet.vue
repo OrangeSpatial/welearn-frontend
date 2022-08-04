@@ -106,7 +106,7 @@
                     <el-table-column label="数据集状态" width="100px">
                         <template slot-scope="scope">
                             <el-popover trigger="hover" placement="left">
-                                <p>审核意见: {{ scope.row.auditContent === null ? "该数据及还未审核！" : scope.row.auditContent}}</p>
+                                <p>审核意见: {{ scope.row.auditContent === null ? "该数据集还未审核！" : scope.row.auditContent}}</p>
                                 <div slot="reference" class="name-wrapper">
                                     <el-tag :type="scope.row.auditStatus=== false ?'danger':'success'">{{ (scope.row.auditStatus === false) ? "未审核":"已审核" }}</el-tag>
                                 </div>
@@ -306,26 +306,20 @@
                     影像上传
                 </div>
                 <p>请选择您影像所在类别，若不存在小类别，请手动填写：</p>
-                <el-select v-model="type.first" @change="getSeconds(type.first)" placeholder="第一级">
-                    <el-option v-for="(item, index) in firstOptions" :key="index" :label="item"
-                               :value="item"/>
-                </el-select>
-                <el-select
-                        v-model="type.second"
-                        @change="getThirds(type.first,type.second)"
-                        placeholder="请先选择第一级"
-                >
-                    <el-option
-                            v-for="(item, index) in secondOptions"
-                            :key="index"
-                            :label="item"
-                            :value="item"
-                    />
-                </el-select>
-                <el-select v-model="type.third" @change="getAlltag()" placeholder="请先选择第二级">
-                    <el-option v-for="(item, index) in thirdOptions" :key="index" :label="item"
-                               :value="item"/>
-                </el-select>
+              <el-cascader
+                  placeholder="请选择影像类别"
+                  style="width: 100%"
+                  filterable
+                  expand-trigger="hover"
+                  :options="uploadState.selectData"
+                  :props="{
+                        value: 'id',
+                        label: 'zh_name',
+                      }"
+                  change-on-select
+                  clearable
+                  v-model="uploadState.imageCategory">
+              </el-cascader>
                 <el-input v-model="usersTag" placeholder="请输入您上传影像中公有的类别，如：道路、建筑物等"/>
                 <el-button class="m-margin" size="small" type="primary" @click="imageChooseFiles">选择影像文件夹</el-button>
                 <div v-show="false">
@@ -444,9 +438,10 @@
     import {getUserByName} from "../api/user";
     import {getByUser, insert, findImageSet, delImageSet} from "../api/imageset";
     import {
-        findFirst,
-        findSecondByFirst,
-        findThirdByFirstAndSecond
+      categoryTree,
+      findFirst,
+      findSecondByFirst,
+      findThirdByFirstAndSecond, getDLtype
     } from "../api/category";
     import {getImageUrlsBySetId, DownloadImage, uploadImage} from "../api/image";
     import {uploadLabel} from "../api/label";
@@ -470,6 +465,10 @@
                     second: "",
                     third: ""
                 },
+              uploadState: {
+                selectData: [],
+                imageCategory: ''
+              },
                 CreatSetFrom: {
                     imageSetName: "",
                     imageSetType: "",
@@ -634,6 +633,25 @@
                     // console.log(that.thirdOptions)
                 });
             },
+          getImageTypes() {
+              categoryTree().then(res => {
+                res.data.forEach((node) => {
+                  this.formatData(node)
+                })
+                this.uploadState.selectData = res.data
+              })
+            getDLtype().then(res=> {
+              this.fieldOptions = res.data
+            })
+            },
+          formatData(node) {
+            if (node.children.length === 0) delete node.children
+            else {
+              node.children.forEach(ch_node => {
+                this.formatData(ch_node)
+              })
+            }
+          },
             getAlltag() {
                 const that = this;
                 const first = that.type.first;
@@ -676,7 +694,7 @@
                 console.log(index, row.imageSetId);
                 this.imageSetId = row.imageSetId;
                 this.imageSetName = row.imageSetName;
-                this.createSet();
+                // this.createSet();
             },
             handleLabelEdit(index, row) {
                 console.log(index, row.imageSetId);
@@ -980,7 +998,8 @@
         },
         mounted() {
             this.findSetAll();
-            this.createSet();
+            // this.createSet();
+            this.getImageTypes();
         }
     };
 </script>

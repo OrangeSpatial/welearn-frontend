@@ -48,15 +48,25 @@
           :default-active="activePath"
           :collapse="!isCollapse"
         >
-          <el-menu-item
-            v-for="item in menus"
-            :key="item.link"
-            @click="saveIndex(item.link)"
-            :index="item.link"
-          >
+          <span v-for="item in adminMenus"
+                :key="item.link">
+            <el-menu-item
+                v-if="!item.children"
+                @click="saveIndex(item.link)"
+                :index="item.link"
+            >
             <i :class="item.icon"/>
             <span slot="title">{{ item.title }}</span>
           </el-menu-item>
+          <el-submenu v-else :index="item.link">
+            <template slot="title">
+              <i :class="item.icon"></i>
+              <span>{{item.title}}</span>
+            </template>
+            <el-menu-item v-for="it in item.children"
+                          :key="it.link" :index="it.link" @click="saveIndex(it.link)">{{it.title}}</el-menu-item>
+          </el-submenu>
+          </span>
         </el-menu>
         <div class="aTB" v-text="aDirection" @click="aToggle()"></div>
       </el-aside>
@@ -78,74 +88,84 @@ export default {
     return {
         menus: [],
       adminMenus: [
-        { icon: "iconfont icon-shouye", index: "/controller/welCome", title: "首页" },
+        { icon: "iconfont icon-shouye", link: "/controller/welCome", title: "首页" },
         {
           icon: "iconfont icon-yonghu1",
-          index: "/controller/users",
+          link: "/controller/users",
           title: "用户管理",
         },
         {
           icon: "iconfont icon-leibie",
-          index: "/controller/category",
+          link: "/controller/category",
           title: "数据分类",
         },
         {
           icon: "iconfont icon-shuju5",
-          index: "/controller/imageSet",
+          link: "/controller/imageSet",
           title: "数据管理",
+          children: [
+            {
+              title: "数据集管理",
+              link: '/controller/imageSet'
+            },
+            {
+              title: "遥感影像管理",
+              link: '/controller/rsImage'
+            }
+          ]
         },
         {
           icon: "iconfont icon-shuju1",
-          index: "/controller/auditImageSet",
+          link: "/controller/auditImageSet",
           title: "数据审核",
         },
         {
           icon: "iconfont icon-moxing1",
-          index: "/controller/model",
+          link: "/controller/model",
           title: "模型管理",
         },
         {
           icon: "iconfont icon-zhuji2",
-          index: "/controller/node",
+          link: "/controller/node",
           title: "节点管理",
         },
         {
           icon: "iconfont icon-renwu3",
-          index: "/controller/task",
+          link: "/controller/task",
           title: "任务管理",
         },
         {
           icon: "iconfont icon-lishijilu",
-          index: "/controller/history",
+          link: "/controller/history",
           title: "历史记录",
         },
         {
           icon: "iconfont icon-xitong1",
-          index: "/controller/setting",
+          link: "/controller/setting",
           title: "系统功能",
         },
-        { icon: "el-icon-finished", index: "/controller/test", title: "测试项" },
+        { icon: "el-icon-finished", link: "/controller/test", title: "测试项" },
       ],
       userMenus: [
-          { icon: "iconfont icon-shouye", index: "/controller/welCome", title: "首页" },
+          { icon: "iconfont icon-shouye", link: "/controller/welCome", title: "首页" },
           {
               icon: "iconfont icon-shuju5",
-              index: "/controller/imageSet",
+              link: "/controller/imageSet",
               title: "数据管理",
           },
           {
               icon: "iconfont icon-moxing1",
-              index: "/controller/model",
+              link: "/controller/model",
               title: "模型管理",
           },
           {
               icon: "iconfont icon-renwu3",
-              index: "/controller/task",
+              link: "/controller/task",
               title: "任务管理",
           },
           {
               icon: "iconfont icon-lishijilu",
-              index: "/controller/history",
+              link: "/controller/history",
               title: "历史记录",
           }
       ],

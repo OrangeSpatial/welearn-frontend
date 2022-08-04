@@ -2,13 +2,9 @@ import router from "../router";
 import axios from "axios";
 // import qs from "qs";
 
-// export const baseURL = "http://202.114.114.21:8005/";
-export const baseURL = "http://localhost:8003/";
+export const baseURL = "http://localhost:8005/";
+// export const baseURL = "http://202.114.114.19:8005/";
 export const JUPYTERURL = "http://202.114.114.21:8002/";
-// export const baseURL = "http://192.168.10.1:8003/";
-// export const JUPYTERURL = "http://192.168.10.100:8002/";
-// export const baseURL = "http://192.168.30.83:8003/";
-// export const JUPYTERURL = "http://192.168.30.111:8002/";
 // 创建axios实例
 const service = axios.create({
   baseURL: baseURL
