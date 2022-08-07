@@ -184,7 +184,6 @@ export default {
       if (this.menus.length === 0) {
         getUserByName(username).then((res) => {
           if (res.status !== 200) return;
-          console.log(res);
           this.menus = res.data.roles[0].menus;
           window.sessionStorage.setItem("userId", res.data.userId)
           this.$store.commit("getCurrentUser", res.data);

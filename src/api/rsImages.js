@@ -11,3 +11,10 @@ export function uploadRSImage(data, modelProcess) {
         onUploadProgress: modelProcess
     })
 }
+
+export function getRSImagesByUser(userId) {
+    return service({
+        method: "get",
+        url: '/rsImage/findAll/'+userId,
+    })
+}

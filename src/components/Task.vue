@@ -39,6 +39,7 @@
                           type="danger"
                           class="button"
                           icon="el-icon-remove-outline"
+                          :loading="loadingState.deleteCurrTaskLoading"
                           @click="handleCancel(item)"
                   >删除任务</el-button>
                 </div>
@@ -143,8 +144,13 @@
                   <el-dropdown-item v-for="(cmodel,i) in task.model.childModel" :key="cmodel.modelChildId" @click.native="downModelChild(cmodel.modelChildId)" :divided="i === 0">{{cmodel.originalName}}</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
-                <el-button style="width: 24%" @click="downloadResult(task.taskId)" type="primary">下载结果</el-button>
-                <el-button style="width: 24%" @click="downloadEnhancedSet(task.taskId,task.simple.enhancedImageSet.imageSetName)" type="primary">下载增强样本集</el-button>
+                <el-button style="width: 24%" @click="downloadResult(task.taskId)"
+                           :loading="loadingState.downloadResultLoading"
+                           type="primary">下载结果</el-button>
+                <el-button style="width: 24%" @click="downloadEnhancedSet(task.taskId,task.simple.enhancedImageSet.imageSetName)"
+                           :loading="loadingState.downloadSimpleLoading"
+                           :disabled="!task.simple.enhancedImageSet"
+                           type="primary">下载增强样本集</el-button>
                 <el-button style="width: 24%" @click="delComfirmDialogVisible = true,delTaskId = task.taskId" type="danger">删除</el-button>
               <el-divider/>
             </div>
@@ -271,7 +277,7 @@
       </el-carousel>
     </el-dialog>
     <!-- 创建表单 -->
-    <el-dialog title="上传增强样本集" width="55%" @close="resetEnhanceForm()" :visible.sync="dialogEnhanceFormVisible">
+    <el-dialog title="上传增强/补充样本集" width="55%" @close="resetEnhanceForm()" :visible.sync="dialogEnhanceFormVisible">
         <el-card shadow="always">
             <!-- 创建数据集 -->
             <el-form
@@ -411,6 +417,19 @@ export default {
         user: null,
         node: null,
         model: null
+      },
+      loadingState: {
+        createLoading: false,
+        startLoading: false,
+        stopLoading: false,
+        enhanceSimpleLoading: false,
+        uploadModelFileLoading: false,
+        saveModelLoading: false,
+        downloadModelLoading: false,
+        downloadResultLoading: false,
+        downloadSimpleLoading: false,
+        deleteTaskLoading: false,
+        deleteCurrTaskLoading: false,
       },
       // 进度
       percentage: 10,
@@ -596,6 +615,7 @@ export default {
                   that.status = "success";
                   that.isReady = true;
                   that.active = 5;
+                  this.dialogFormVisible = false
               }).catch(err => {
                   that.status = "exception";
                   console.log(err)
@@ -735,11 +755,15 @@ export default {
       },
       async handleCancel(row) {
           console.log(row.status);
+          this.loadingState.deleteCurrTaskLoading = true
           if (row.status === 0 || row.status === 3) {
               delTask(row.taskId).then(res => {
                   if (res.status !== 200) return this.$message.error("删除任务失败！");
                   this.taskData = [];
                   this.findTaskList();
+                  this.loadingState.deleteCurrTaskLoading = false
+              }).catch( () => {
+                this.loadingState.deleteCurrTaskLoading = false
               });
           } else {
               this.delDialogVisible = true;
@@ -931,6 +955,8 @@ export default {
                   title: '成功',
                   message: "获取成功"
               })
+          }).catch(() => {
+            this.modelDownloadDisable = false;
           })
       },
       downModelChild(modelChildId){
@@ -951,35 +977,54 @@ export default {
                   title: '成功',
                   message: "获取成功！"
               })
+          }).catch(() => {
+            this.modelDownloadDisable = false;
           })
       },
       downloadResult(taskId){
-          console.log("开始下载结果=====》")
+          this.loadingState.downloadResultLoading = true
           const that = this
           const link = document.createElement("a");
           downloadResult(taskId).then(res=>{
-              if (res.status !== 200) return that.$notify.error({
+              if (res.status !== 200) {
+                this.loadingState.downloadResultLoading = false
+                return that.$notify.error({
                   title: '失败',
                   message: "获取失败,结果可能不存在！"
-              });
+                });
+              }
               link.href = res.data;
               setTimeout(() => {
                   link.click(); // 下载文件
+                this.loadingState.downloadResultLoading = false
               }, 200);
               return that.$notify.success({
                   title: '成功',
                   message: "获取成功！"
               })
+          }).catch(() => {
+            this.loadingState.downloadResultLoading = false
+            return that.$notify.error({
+              title: '失败',
+              message: "下载失败！"
+            });
           })
       },
       downloadEnhancedSet(taskId,imageSetName){
-          console.log("开始下载增强数据集=====》")
+        if (!imageSetName) return that.$notify.error({
+          title: '提示',
+          message: "该任务没有增强样本！"
+        });
+          this.loadingState.downloadSimpleLoading = true
           const that = this
           downloadEnhancedSet(taskId).then(res=>{
-              if (res.status !== 200) return that.$notify.error({
+              if (res.status !== 200) {
+                this.loadingState.downloadSimpleLoading = false
+                return that.$notify.error({
                   title: '失败',
                   message: "获取失败,结果可能不存在！"
-              });
+                });
+              }
               const blob = new Blob([res.data], {type: 'application/zip'});
               const fileName = imageSetName + ".zip";
               if ("download" in document.createElement("a")) {
@@ -992,6 +1037,7 @@ export default {
                   elink.click();
                   window.URL.revokeObjectURL(elink.href); // 释放URL 对象
                   document.body.removeChild(elink);
+                  this.loadingState.downloadSimpleLoading = false
               } else {
                   // IE10+下载
                   navigator.msSaveBlob(blob, fileName);
@@ -1000,6 +1046,8 @@ export default {
                   title: '成功',
                   message: "获取成功！"
               })
+          }).catch(() => {
+            this.loadingState.downloadSimpleLoading = false
           })
       },
       delTask(taskId){

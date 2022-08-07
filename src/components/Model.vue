@@ -293,6 +293,10 @@
                 this.$refs.upload.clearFiles()
             },
             beforeUpload(file) {
+              if(file.name.includes(' ')){
+                 this.$message.error('文件名中不能有空格！！！')
+                return false
+              }
                 if (file.size > 1024 * 1024 * 1024) {
                     this.$message.error('文件过大，支持1G以内文件。您的文件：' + Math.round((file.size / 1024 / 1024) * 100) / 100 + 'MB')
                     this.resetForm()
