@@ -84,11 +84,12 @@
                 </el-form-item>
               </el-form>
             <p>注："所属类别" 为父级类别，若为根节点则无需选择</p>
-            <el-tree :data="selectData" :props="{
-                        value: 'id',
-                        label: 'zh_name',
-                      }"
-                     default-expand-all></el-tree>
+<!--            <el-tree :data="selectData" :props="{-->
+<!--                        value: 'id',-->
+<!--                        label: 'zh_name',-->
+<!--                      }"-->
+<!--                     default-expand-all></el-tree>-->
+            <div style="height: 500px" ref="category-chart"></div>
           </el-card>
         </el-col>
       </el-row>
@@ -104,6 +105,7 @@ import {
   categoryTree,
   saveCategory, getDLtype
 } from '../api/category'
+import * as echarts from 'echarts';
 
 export default {
   data: function () {
@@ -162,6 +164,49 @@ export default {
           })
       })
     },
+    initChart(data) {
+      const categoryChart = this.$refs["category-chart"]
+      const myChart = echarts.init(categoryChart);
+      myChart.setOption({
+        tooltip: {
+          trigger: 'item',
+          triggerOn: 'mousemove'
+        },
+        series: [
+          {
+            type: 'tree',
+            data: [data],
+            top: '1%',
+            left: '7%',
+            bottom: '1%',
+            right: '20%',
+            symbolSize: 7,
+            label: {
+              position: 'left',
+              verticalAlign: 'middle',
+              align: 'right',
+              fontSize: 9,
+              formatter: function(params) {
+                console.log(params)
+              },
+            },
+            leaves: {
+              label: {
+                position: 'right',
+                verticalAlign: 'middle',
+                align: 'left'
+              }
+            },
+            emphasis: {
+              focus: 'descendant'
+            },
+            expandAndCollapse: true,
+            animationDuration: 550,
+            animationDurationUpdate: 750
+          }
+        ]
+      });
+    },
     async onSubmit () {
       const that = this
       that.$refs.CFormRef.validate(async valid => {
@@ -184,12 +229,18 @@ export default {
           this.formatData(node)
         })
         this.selectData = res.data
+        this.initChart({
+          name: '分类',
+          children: this.selectData
+        })
+        console.log(this.selectData)
       })
       getDLtype().then(res=> {
         this.categoryData = res.data
       })
     },
     formatData(node){
+      node.name = node.zh_name
       if (node.children.length === 0) delete node.children
       else {
         node.children.forEach(ch_node => {

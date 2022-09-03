@@ -2,9 +2,11 @@ import router from "../router";
 import axios from "axios";
 // import qs from "qs";
 
+// export const baseURL = "http://192.168.56.128:8005/";
 export const baseURL = "http://localhost:8005/";
 // export const baseURL = "http://202.114.114.19:8005/";
 export const JUPYTERURL = "http://192.168.56.129:8888/";
+// export const JUPYTERURL = "http://202.114.114.19:8004/";
 // 创建axios实例
 const service = axios.create({
   baseURL: baseURL
